@@ -11,7 +11,7 @@ As the URL requirement for nested stacks [requires and S3 URL](http://docs.aws.a
 
 We at Onica have faced this challenge numerous times, and as a result have modified the AWS provided scripts to actually deposit the contents of your repo while maintaining the original directory structure found with your repo. Our method involves taking the code from the AWS provided scripts and hosting them within your own S3 bucket, allowing us to modify the Lambda functions at our leisure. Use the following steps to create a stack that makes the necessary modifications.
 
-**Note:** These steps can be followed to illustrate the process of modifying the AWS Quick Start. You can also simply create the S3 bucket and use the Cloudformation template and Python script linked at the [end of this blog](#bonus).
+**Note:** The following steps can be followed to illustrate the process of modifying the AWS Quick Start for your own needs. You can also simply create the S3 bucket and use the Cloudformation template and Python script linked at the [end of this blog](#bonus).
 
 ## Step 1: Configure the Initial Stack for Use<a id="step-1"></a>
 
