@@ -15,7 +15,7 @@ We at Onica have faced this challenge numerous times, and as a result have modif
 
 ## Step 1: Configure the Initial Stack for Use<a id="step-1"></a>
 
-Using the quick-start guide, follow the steps for configuration, ensuring you configure for the **Git pull endpoint** strategy, not the **Zip download endpoint** strategy. This initial configuration will consist of setting up the webhook in your repo, configuring an SSH keypair, and deploying the Lambda functions. Once this is in-place, be sure to do a test to verify everything is working correctly.
+Using the [quick-start](https://s3.amazonaws.com/quickstart-reference/git2s3/latest/doc/git-to-amazon-s3-using-webhooks.pdf) guide, follow the steps for configuration, ensuring you configure for the **Git pull endpoint** strategy, not the **Zip download endpoint** strategy. This initial configuration will consist of setting up the webhook in your repo, configuring an SSH keypair, and deploying the Lambda functions. Once this is in-place, be sure to do a test to verify everything is working correctly.
 
 While we won’t dive into detail on these steps as they are outlined in the quick start guide, the basics are creating a bucket for your repo objects to live, providing the IP ranges for your preferred repo, and designating the buckets to pull the quick-start files from. This will take 15-20 minutes, and all steps are well-defined within the guide.
 
@@ -259,7 +259,7 @@ First we need to update the IAM role and policy that was automatically generated
 
 ## Step 5: Modify the Cloudformation Template to Use Custom Code<a id="step-5"></a>
 
-Now we simply need to change our Cloudformation Template to source the code from our S3 bucket as opposed to the AWS Quick Start bucket. Go to Cloudformation, select your stack, and click Actions -> Update.
+Now we need to rebuild our Cloudformation Template to source the code from our S3 bucket as opposed to the AWS Quick Start bucket. Go to Cloudformation, select your stack, and click Actions -> Update.
 
 Use your new template instead of the old one.
 
