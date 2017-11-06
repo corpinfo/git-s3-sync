@@ -859,37 +859,6 @@
                                 {
                                     "Effect": "Allow",
                                     "Action": [
-                                        "s3:*"
-                                    ],
-                                    "Resource": [
-                                        {
-                                            "Fn::Join": [
-                                                "",
-                                                [
-                                                    "arn:aws:s3:::",
-                                                    {
-                                                        "Ref": "OutputBucket"
-                                                    }
-                                                ]
-                                            ]
-                                        },
-                                        {
-                                            "Fn::Join": [
-                                                "",
-                                                [
-                                                    "arn:aws:s3:::",
-                                                    {
-                                                        "Ref": "OutputBucket"
-                                                    },
-                                                    "/*"
-                                                ]
-                                            ]
-                                        }
-                                    ]
-                                },
-                                {
-                                    "Effect": "Allow",
-                                    "Action": [
                                         "kms:Decrypt"
                                     ],
                                     "Resource": [
@@ -904,7 +873,7 @@
                                 {
                                     "Effect": "Allow",
                                     "Action": [
-                                        "s3:*"
+                                        "s3:PutObject"
                                     ],
                                     "Resource": [
                                         {

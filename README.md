@@ -6,16 +6,16 @@ Nested Stacks are a great way to deploy your infrastructure in a modular fashion
 Version Control of Child Templates – Sync your Git Repo to S3
 -------------------------------------------------------------
 
-As the URL requirement for nested stacks [requires and S3 URL](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-stack.html#cfn-cloudformation-stack-templateurl), making changes can quickly become a hassle when there are several child templates that need to be maintained. Enter a great [quick-start](https://s3.amazonaws.com/quickstart-reference/git2s3/latest/doc/git-to-amazon-s3-using-webhooks.pdf) by AWS that gets us 80% of the way there. This quick-start will create Lambda functions that will take the contents of your git repo and upload a ZIP of them to S3. This is a great tool, but a ZIP file is useless to us if we want to actually hit the files directly via URL.
+As the URL requirement for nested stacks [requires a(n) S3 URL](http://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-stack.html#cfn-cloudformation-stack-templateurl), making changes can quickly become a hassle when there are several child templates that need to be maintained. Enter a great [quick-start](https://s3.amazonaws.com/quickstart-reference/git2s3/latest/doc/git-to-amazon-s3-using-webhooks.pdf) by AWS that gets us 80% of the way there. This quick-start will create Lambda functions that will take the contents of your git repo and upload a ZIP of them to S3. This is a great solution, but a ZIP file might not fit your organization's needs, especially if we want to use the files directly via URL.
 
 
 We at Onica have faced this challenge numerous times, and as a result have modified the AWS provided scripts to actually deposit the contents of your repo while maintaining the original directory structure found with your repo. Our method involves taking the code from the AWS provided scripts and hosting them within your own S3 bucket, allowing us to modify the Lambda functions at our leisure. Use the following steps to create a stack that makes the necessary modifications.
 
-**Note:** The following steps can be followed to illustrate the process of modifying the AWS Quick Start for your own needs. You can also simply create the S3 bucket and use the Cloudformation template and Python script linked at the [end of this blog](#bonus).
+**Note:** These steps can be followed to illustrate the process. You can also simply create the S3 bucket and use the Cloudformation template at the [end of this blog](#bonus).
 
 ## Step 1: Configure the Initial Stack for Use<a id="step-1"></a>
 
-Using the [quick-start](https://s3.amazonaws.com/quickstart-reference/git2s3/latest/doc/git-to-amazon-s3-using-webhooks.pdf) guide, follow the steps for configuration, ensuring you configure for the **Git pull endpoint** strategy, not the **Zip download endpoint** strategy. This initial configuration will consist of setting up the webhook in your repo, configuring an SSH keypair, and deploying the Lambda functions. Once this is in-place, be sure to do a test to verify everything is working correctly.
+Using the quick-start guide, follow the steps for configuration, ensuring you configure for the **Git pull endpoint** strategy, not the **Zip download endpoint** strategy. This initial configuration will consist of setting up the webhook in your repo, configuring an SSH keypair, and deploying the Lambda functions. Once this is in-place, be sure to do a test to verify everything is working correctly.
 
 While we won’t dive into detail on these steps as they are outlined in the quick start guide, the basics are creating a bucket for your repo objects to live, providing the IP ranges for your preferred repo, and designating the buckets to pull the quick-start files from. This will take 15-20 minutes, and all steps are well-defined within the guide.
 
@@ -27,7 +27,7 @@ Once you have run the template for the first time, all of the necessary script w
 
     aws s3api create-bucket --bucket [BucketName --region [Region] --create-bucket-configuration LocationConstraint=[Region]
 
-The initial setup will have created a bucket in your account with the following pattern: [stackname]-lambdazipsbucket-[randomhash]. Take the contents of this bucket and copy them to the custom bucket that was just created.
+The initial setup will have created a bucket in your account with the following pattern: [stackname]-lambdazipsbucket-[randomhash]. Take the contents of this bucket(including folder structure) and copy them to the custom bucket that was just created.
 
 The following command can be used to quickly move the files:
 
@@ -219,66 +219,23 @@ There is only one Lambda function that needs to be modified. It can be found at 
 
 Once replaced, repack the zip file with the same name and upload to your S3 bucket, replacing the existing GitPullS3.zip file.
 
-## Step 4: Update Our IAM Role<a id="step-4"></a>
 
-First we need to update the IAM role and policy that was automatically generated by the initial stack. Go to Cloudformation, select the stack, click the Template tab. Copy the entire template to an editor, and navigate to line 855. This is where the permissions for the IAM role are created. On line 859, paste the following:
+## Step 4: Modify the Cloudformation Template to Use Custom Code<a id="step-4"></a>
 
-    {
-        "Effect": "Allow",
-        "Action": [
-            "s3:*"
-        ],
-        "Resource": [
-            {
-                "Fn::Join": [
-                    "",
-                    [
-                        "arn:aws:s3:::",
-                        {
-                            "Ref": "OutputBucket"
-                        }
-                    ]
-                ]
-            },
-            {
-                "Fn::Join": [
-                    "",
-                    [
-                        "arn:aws:s3:::",
-                        {
-                            "Ref": "OutputBucket"
-                        },
-                        "/*"
-                    ]
-                ]
-            }
-        ]
-    },
+Now we simply need to change our Cloudformation Template to source the code from our S3 bucket as opposed to the AWS Quick Start bucket. Go to Cloudformation, select your stack, and click Actions -> Update.
+
+Use your new template instead of the old one.
+
+Change the fields below to reference your bucket:
 
 
+Now continue through to update your stack. 
 
-## Step 5: Modify the Cloudformation Template to Use Custom Code<a id="step-5"></a>
+Finally, make a commit to your repo to test. You should see your repo cloned into S3.
 
-Now we need to redeploy our Cloudformation Template to source the code from our S3 bucket as opposed to the AWS Quick Start bucket. The reason for the redeploy as opposed to Stack Update is that the existing IAM roles will cause a CopyObject error as we are switching to a new S3 bucket as the source for the configuration files.
+# Bonus<a id="bonus"></a>
 
-1. Go to Cloudformation and delete the existing stack.
-
-2. Create a new stack with our now modified template.
-
-3. Update the fields to now reflect our new bucket for sourcing the code.
-
-4. Now continue through to creation of your stack with the new values.
-
-5. Configure your repo of choice with the webhook and access key generated by the new stack.
-
-6. Finally, make a commit to your repo to test. You should see your repo cloned into S3.
-
-## Shortcut<a id="bonus"></a>
-
-While the steps above will get you there, it would be even easier to use a pre-created template with all modifications in place. Please find the Cloudformation JSON file and python script on our [public github](https://github.com/corpinfo/git-s3-sync).
-
-[Here](https://github.com/aws-quickstart/quickstart-git2s3/lambdas) are the source code bundles to add to your repo, directly from the AWS public github. You can simply drop these lambda functions into your own source folder. Be sure to correctly indicate the S3 path when running the CloudFormation Template.
-
+While the steps above will get you there, it would be even easier to use a pre-created template with all modifications in place. Please find the Cloudformation JSON file and python script on our [public github](https://github.com/corpinfo/git-s3-sync).#
 
 Happy coding!
 
